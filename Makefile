@@ -1,12 +1,12 @@
 
-cc=gcc
+cc=g++
 cflags=-Wall -Werror
 
 all: main.o
 	$(cc) main.o -o build/uwuify
 
-main.o: src/main.c
-	$(cc) -c src/main.c
+main.o: src/main.cpp
+	$(cc) -c src/main.cpp
 
 clean:
 	rm -rf *.o build/*
