@@ -1,3 +1,4 @@
+cc=gcc
 cflags=-Wall -Werror
 
 all: main.o
