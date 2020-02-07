@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
 			auto type = getArgs(argv[n]);
 			if(type == 'h'){
 				std::cout << "Usage:" << std::endl 
-					<< "\t-f  --file\tInput file, used to specify input file. Can be used with -o to specify output file." << std::endl;
+					<< "\t-f  --file\tInput file, used to specify input file." << std::endl;
 				return 0;
 			}
 			else if(type == 'f'){
