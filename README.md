@@ -2,6 +2,25 @@
 A program to 'uwufy' different text.
 The program is a c++ clone of [uwu](https://git.sr.ht/~polanco/uwu)
 
+## Installing
+You need to have g++ and make installed to make it work.
+You can compile the files with make.
+```bash
+$ make
+```
+You can then install it. It installes it to /usr/bin.
+```bash
+$ sudo make install
+```
+You can easily remove it by writing.
+```bash
+$ sudo make remove
+```
+or
+```bash
+$ sudo make uninstall
+```
+
 ## Usage
 Here is a basic example.
 <pre><font color="#4E9A06"><b>$</b></font> uwufy &quot;The train is late&quot;

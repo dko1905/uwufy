@@ -17,3 +17,5 @@ install: build/uwufy
 
 remove:
 	rm -f /usr/bin/uwufy
+uninstall:
+	rm -f /usr/bin/uwufy
