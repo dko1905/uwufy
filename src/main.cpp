@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <istream>
 
 void findAndReplaceAll(std::string &data, std::string toSearch, std::string replaceStr);
 void uwufy(std::string &input);
@@ -10,13 +11,15 @@ char getArgs(std::string arg);
 
 void readlineFileMode(std::ifstream &file);
 
+#define MAXLINE 50
+
 int main(int argc, char *argv[]){
 	if(argc < 2){
 		// If no args are passed use readline mode.
 		readlineMode();
 	}
 	else{
-		bool useF = false;
+		auto useF = false;
 		std::string f;
 		for(int n = 1; n < argc; n++){
 			auto type = getArgs(argv[n]);
@@ -50,8 +53,6 @@ int main(int argc, char *argv[]){
 			std::cout << arg1;
 		}
 	}
-	
-	
 }
 char getArgs(std::string arg){
 	if(arg[0] == '-'){
@@ -65,18 +66,30 @@ char getArgs(std::string arg){
 	return ' ';
 }
 
+bool readlineOrMax(std::istream &is, std::string &output, unsigned int max){	
+	output.clear();
+
+	unsigned int currentIndex = 0;
+	char c;
+	while( is.read(&c, 1) ){
+		output.push_back(c);
+		if(currentIndex >= max || c == '\n'){
+			return true;
+		}
+		currentIndex++;
+	}
+	return false;
+}
 void readlineMode(){
-	for(std::string line; std::getline(std::cin, line);){
-		line.push_back('\n');
-		uwufy(line);
-		std::cout << line;
+	for(std::string temp = std::string(); readlineOrMax(std::cin, temp, MAXLINE);){
+		uwufy(temp);
+		std::cout << temp;
 	}
 }
 void readlineFileMode(std::ifstream &file){
-	for(std::string line; std::getline(file, line);){
-		line.push_back('\n');
-		uwufy(line);
-		std::cout << line;
+	for(std::string temp = std::string(); readlineOrMax(file, temp, MAXLINE);){
+		uwufy(temp);
+		std::cout << temp;
 	}
 }
 
