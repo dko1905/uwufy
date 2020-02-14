@@ -1,5 +1,5 @@
 cc=g++
-cflags=-Wall -Werror
+cflags=-Wall -Werror -std=c++17
 
 all: main.o
 	mkdir -p build
