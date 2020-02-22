@@ -3,23 +3,19 @@ cflags=-Wall -Werror -std=c++17
 
 all: main.o
 	mkdir -p build
-	$(cc) main.o -o build/uwufy
+	$(cc) main.o -o build/uwufy $(cflags)
 
 main.o: src/main.cpp
-	$(cc) -c src/main.cpp
+	$(cc) -c src/main.cpp $(cflags)
 
 clean:
 	rm -rf *.o build/*
 
-ifeq ($(PREFIX),)
-	PREFIX := /usr/
-endif
-
 install: build/uwufy
-	mkdir -p $(DESTDIR)$(PREFIX)/bin/
-	cp build/uwufy $(DESTDIR)$(PREFIX)/bin/uwufy -f
+	mkdir -p $(DESTDIR)/usr/bin
+	install -m 0755 ./build/uwufy $(DESTDIR)/usr/bin/uwufy 
 
 remove:
-	rm -f $(DESTDIR)$(PREFIX)/bin/uwufy
+	rm -f $(DESTDIR)/usr/bin/uwufy
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/uwufy
+	rm -f $(DESTDIR)/usr/bin/uwufy
