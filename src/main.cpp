@@ -71,7 +71,8 @@ bool readlineOrMax(std::istream &is, std::string &output, unsigned int max){
 
 	unsigned int currentIndex = 0;
 	char c;
-	while( is.read(&c, 1) ){
+
+	while( (c = is.get()) ){
 		output.push_back(c);
 		if(currentIndex >= max || c == '\n'){
 			return true;
