@@ -1,21 +1,33 @@
-cc=g++
-cflags=-Wall -Werror -std=c++17
+.POSIX:
 
-all: main.o
-	mkdir -p build
-	$(cc) main.o -o build/uwufy $(cflags)
+include config.mk
 
-main.o: src/main.cpp
-	$(cc) -c src/main.cpp $(cflags)
+OBJECTS = main.o
 
+all: options uwufy
+
+options:
+	@echo uwufy options:
+	@echo "CFLAGS  = $(MYCFLAGS)"
+	@echo "LDFLAGS = $(MYLDFLAGS)"
+	@echo "CC      = $(CC)"
+
+.c.o:
+	$(CC) $(MYCFLAGS) -c $<
+
+uwufy: $(OBJECTS)
+	$(CC) $(OBJECTS) -o uwufy $(MYLDFLAGS)
+
+# Remove binary and object files
 clean:
-	rm -rf *.o build/*
+	rm -f uwufy $(OBJECTS)
 
-install: build/uwufy
-	mkdir -p $(DESTDIR)/usr/bin
-	install -m 0755 ./build/uwufy $(DESTDIR)/usr/bin/uwufy 
-
-remove:
-	rm -f $(DESTDIR)/usr/bin/uwufy
+# Install program
+install: all
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp -f uwufy $(DESTDIR)$(PREFIX)/bin
+	chmod +x $(DESTDIR)$(PREFIX)/bin/uwufy
 uninstall:
-	rm -f $(DESTDIR)/usr/bin/uwufy
+	rm -f $(DESTDIR)$(PREFIX)/bin/uwufy
+
+.PHONY: all options clean install uninstall
