@@ -1,5 +1,5 @@
 # uwufy
 WIP
 
-# License
+## License
 [GPL-3.0-or-later](./LICENSE)
