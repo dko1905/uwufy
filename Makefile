@@ -2,7 +2,7 @@
 
 include config.mk
 
-OBJECTS = main.o
+OBJECTS = main.o die.o stack.o
 
 all: options uwufy
 
