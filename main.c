@@ -71,7 +71,7 @@ int cnv_ascii(FILE *in, FILE *out) {
 		for (n = 0; n < bytes_read; ++n) {
 			cc = read_buffer[n];
 			/* Is char from alphabet */
-			if (fast_isalpha(read_buffer[n])) {
+			if (fast_isalpha(cc)) {
 				/* Everything must be lowercase. */
 				cc = tolower(cc);
 				/* Remove double 'l','r' and convert into 'w'. */
@@ -117,8 +117,7 @@ int cnv_ascii(FILE *in, FILE *out) {
 						emoji_state = 0;
 					}
 				}
-				/* If start of sentence. */
-				if (sentence_state == 0) {
+				if (fast_isalpha(cc)) {
 					/* Stutter logic. */
 					if (stutter_state == 0) {
 						WBUFFER_WRITE(cc);

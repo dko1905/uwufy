@@ -21,7 +21,7 @@ Here are some 100% clear rules to follow.
 3. remove double `l` or `r`
 4. add text emoji randomly after punctuation (`.`, `!`)
 5. everything must be lowercase
-6. stutter at the start of sentences sometimes
+6. stutter at the start of sentences sometimes, only alphabetical chars
 
 ## License
 [GPL-3.0-or-later](./LICENSE)
