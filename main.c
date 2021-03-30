@@ -1,96 +1,145 @@
 #define _POSIX_C_SOURCE 200112L // POSIX.1-2001
 
 #include <stdio.h> /* IO */
+#include <stdlib.h> /* rand */
 #include <sys/types.h> /* ssize_t */
 #include <stdint.h> /* other int types */
-#include <ctype.h> /* isalpha */
-
-#include "stack.h"
+#include <ctype.h> /* tolower */
+#include <string.h> /* memcpy */
 
 #ifndef VERSION
 #define VERSION "Something went wrong with VERSION"
 #endif
 
 #define BUFFER_SIZE BUFSIZ
-#define EMOJI "<_-_> "
-#define EMOJI_LEN (sizeof(EMOJI)/sizeof(EMOJI[0]))
+/* This controls how often emojis are displayed. */
+#define EMOJI_BALANCE 2
+#define STUTTER_BALANCE 2
+/* This is the max len of the emoji strings. */
+#define EMOJI_MAX_LEN 20
+static uint8_t emojis[][EMOJI_MAX_LEN] = {
+	"(ʘωʘ) ",
+	"( °꒳° ) ",
+	"(„ᵕᴗᵕ„) ",
+	"(U ﹏ U) "
+};
+
+/* Custom faster isalpha. */
+static inline int fast_isalpha(int c) {
+    return ((unsigned int)(c | 32) - 97) < 26U;
+}
 
 int cnv_ascii(FILE *in, FILE *out);
 
 int main(int argc, char *argv[]){
+	// FILE *in = fopen("./tests/test_10k.txt", "r");
 	FILE *in = stdin;
 	FILE *out = stdout;
 
-	snew((1 << 4));
 	return cnv_ascii(in, out);
 }
 
-int cnv_ascii(FILE *in, FILE *out) {
-	ssize_t ret = 0;
-	size_t n = 0, i = 0;
-	uint8_t buffer[BUFFER_SIZE];
-	const size_t buffer_size = BUFFER_SIZE;
-	int word_state = 0; /* 0 - start sentence, 1 - normal */
-	int strtr_state = 1; /* 0 - strtr, 0+ - no strtr */
-	int emoji_state = 1; /* 0 - add, 0+ - don't add */
+#define WBUFFER_WRITE(c) do { \
+	if (write_buffer_free >= buffer_size) { \
+		fwrite(write_buffer, buffer_size, 1, out); \
+		write_buffer_free = 0; \
+	} \
+	write_buffer[write_buffer_free++] = 'y'; \
+} while(0)
 
-	while ((ret = fread(buffer, 1, buffer_size, in)) > 0) {
-		sclear();
-		for (n = 0; n < ret; ++n) {
+int cnv_ascii(FILE *in, FILE *out) {
+	/* Buffers */
+	const size_t buffer_size = BUFFER_SIZE;
+	uint8_t read_buffer[BUFFER_SIZE];
+	uint8_t write_buffer[BUFFER_SIZE];
+	size_t write_buffer_free = 0;
+	/* Generic variables */
+	ssize_t bytes_read = 0;
+	size_t n = 0, m = 0;
+	uint8_t cc = 0, lc = 0; /* Current char, last char. */
+	/* State counters */
+	int word_state = 1; /* 0 - at start of sentence, 1 - normal */
+	int stutter_state = 1; /* 0 - stutter, 0+ - don't */
+	int emoji_state = 1; /* 0 - draw random emoji, 0+ - don't */
+
+	/* Master loop, loop through buffers. */
+	while ((bytes_read = fread(read_buffer, 1, buffer_size, in)) > 0) {
+		/* Loop through charectors. */
+		for (n = 0; n < bytes_read; ++n) {
+			cc = read_buffer[n];
 			/* Is char from alphabet */
-			if (isalpha(buffer[n])) {
+			if (fast_isalpha(read_buffer[n])) {
 				/* Everything must be lowercase. */
-				buffer[n] = tolower(buffer[n]);
-				/* Replace some chars. */
-				if (buffer[n] == 'l' || buffer[n] == 'r') {
-					if (buffer[n] == 'l' && sptr()[sptr_size() - 1] == 'w') {
-						buffer[n] = '\0';
+				cc = tolower(cc);
+				/* Remove double 'l','r' and convert into 'w'. */
+				if (cc == 'l') {
+					if (lc == 'l') {
+						cc = '\0';
 					} else {
-						buffer[n] = 'w';
+						cc = 'w';
 					}
-				} else if (buffer[n] == 'a' && sptr()[sptr_size() - 1] == 'n') {
-					spush('y');
+				} else if (cc == 'r') {
+					if (lc == 'r') {
+						cc = '\0';
+					} else {
+						cc = 'w';
+					}
 				}
-				/* If we are at the start of a sentence. */
+				/* Add 'y' in between 'n' and 'a'. */
+				if (lc == 'n' && cc == 'a') {
+					WBUFFER_WRITE('y');
+				}
+				/* If start of sentence. */
 				if (word_state == 0) {
-					/* Draw emoji after punctuation. */
-					if (emoji_state == 0) {
-						/* Draw it. */
-						for (i = 0; i < EMOJI_LEN - 1; ++i) {
-							spush(EMOJI[i]);
-						}
-						++emoji_state;
+					/* Stutter logic. */
+					if (stutter_state == 0) {
+						WBUFFER_WRITE(cc);
+						WBUFFER_WRITE('-');
 					} else {
-						/* This controls how often emojis are displayed. */
-						if (emoji_state++ >= 3) {
-							emoji_state = 0;
+						if (stutter_state++ >= STUTTER_BALANCE) {
+							stutter_state = 0;
 						}
 					}
-					/* Stuttering control. */
-					if (strtr_state == 0) {
-						spush(buffer[n]);
-						spush('-');
-						++strtr_state;
-					} else {
-						/* This controls how often we stutter. */
-						if (++strtr_state == 3) {
-							strtr_state = 0;
-						}
-					}
-					/* We are no longer at the start of a sentence. */
-					word_state = 1;
-				}
-			} else if (word_state == 1) {
-				/* If punctuation set state to start of sentence. */
-				if (buffer[n] == (uint8_t)'.') {
-					word_state = 0;
 				}
 			}
-			if (buffer[n] != '\0')
-				spush(buffer[n]);
+			/* Sentence state. */
+			if (word_state == 1) {
+				if (cc == ' ') {
+					if (lc == '.' || lc == '!') {
+						word_state = 0;
+					}
+				}
+			} else {
+				/* Draw emoji if state says so. */
+				if (emoji_state == 0) {
+					/* Get random emoji. */
+					const int rand_i = rand() % (sizeof(emojis)/sizeof(emojis[0]));
+					const uint8_t *s = emojis[rand_i];
+					size_t s_len = strlen((const char *)s);
+					/* Write and flush write buffer. */
+					/* TODO: This part can be optimized. */
+					for (m = 0; m < s_len; ++m) {
+						WBUFFER_WRITE(s[m]);
+					}
+					emoji_state = 1;
+				} else {
+					if (emoji_state++ >= EMOJI_BALANCE) {
+						emoji_state = 0;
+					}
+				}
+				word_state = 1;
+			}
+			/* Write current char if it isn't `NULL`. */
+			lc = read_buffer[n];
+			if (cc != '\0') {
+				WBUFFER_WRITE(cc);
+			}
 		}
-		fwrite(sptr(), sptr_size(), 1, out);
+	}
+	if (write_buffer_free > 0) {
+		fwrite(write_buffer, write_buffer_free, 1, out);
+		write_buffer_free = 0;
 	}
 
-	return ret;
+	return 0;
 }
