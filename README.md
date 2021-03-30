@@ -4,7 +4,7 @@ fastest **cross-architecture** text uwuifier in the west, on x86-64 CPUs with
  [Daniel-Liu-c0deb0t/uwu](https://github.com/Daniel-Liu-c0deb0t/uwu)
  , but this one works on **all** platforms. Even on a
  [toaster](https://www.embeddedarm.com/blog/netbsd-toaster-powered-by-the-ts-7200-arm9-sbc/)
- , bet you that
+, bet you that
  [Daniel-Liu-c0deb0t/uwu](https://github.com/Daniel-Liu-c0deb0t/uwu)
  can't do that.
 
