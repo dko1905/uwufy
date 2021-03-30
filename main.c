@@ -13,7 +13,7 @@
 
 #define BUFFER_SIZE BUFSIZ
 /* This controls how often emojis are displayed. */
-#define EMOJI_BALANCE 2
+#define EMOJI_BALANCE 1
 #define STUTTER_BALANCE 2
 /* This is the max len of the emoji strings. */
 #define EMOJI_MAX_LEN 20
@@ -39,12 +39,12 @@ int main(int argc, char *argv[]){
 	return cnv_ascii(in, out);
 }
 
-#define WBUFFER_WRITE(c) do { \
+#define WBUFFER_WRITE(_WBUFFER_WRITE_C) do { \
 	if (write_buffer_free >= buffer_size) { \
 		fwrite(write_buffer, buffer_size, 1, out); \
 		write_buffer_free = 0; \
 	} \
-	write_buffer[write_buffer_free++] = 'y'; \
+	write_buffer[write_buffer_free++] = _WBUFFER_WRITE_C; \
 } while(0)
 
 int cnv_ascii(FILE *in, FILE *out) {
@@ -58,7 +58,7 @@ int cnv_ascii(FILE *in, FILE *out) {
 	size_t n = 0, m = 0;
 	uint8_t cc = 0, lc = 0; /* Current char, last char. */
 	/* State counters */
-	int word_state = 1; /* 0 - at start of sentence, 1 - normal */
+	int sentence_state = 1; /* 0 - at start of sentence, 1 - normal */
 	int stutter_state = 1; /* 0 - stutter, 0+ - don't */
 	int emoji_state = 1; /* 0 - draw random emoji, 0+ - don't */
 
@@ -89,24 +89,12 @@ int cnv_ascii(FILE *in, FILE *out) {
 				if (lc == 'n' && cc == 'a') {
 					WBUFFER_WRITE('y');
 				}
-				/* If start of sentence. */
-				if (word_state == 0) {
-					/* Stutter logic. */
-					if (stutter_state == 0) {
-						WBUFFER_WRITE(cc);
-						WBUFFER_WRITE('-');
-					} else {
-						if (stutter_state++ >= STUTTER_BALANCE) {
-							stutter_state = 0;
-						}
-					}
-				}
 			}
 			/* Sentence state. */
-			if (word_state == 1) {
+			if (sentence_state == 1) {
 				if (cc == ' ') {
 					if (lc == '.' || lc == '!') {
-						word_state = 0;
+						sentence_state = 0;
 					}
 				}
 			} else {
@@ -127,7 +115,20 @@ int cnv_ascii(FILE *in, FILE *out) {
 						emoji_state = 0;
 					}
 				}
-				word_state = 1;
+				/* If start of sentence. */
+				if (sentence_state == 0) {
+					/* Stutter logic. */
+					if (stutter_state == 0) {
+						WBUFFER_WRITE(cc);
+						WBUFFER_WRITE('-');
+						stutter_state = 1;
+					} else {
+						if (stutter_state++ >= STUTTER_BALANCE) {
+							stutter_state = 0;
+						}
+					}
+				}
+				sentence_state = 1;
 			}
 			/* Write current char if it isn't `NULL`. */
 			lc = read_buffer[n];
