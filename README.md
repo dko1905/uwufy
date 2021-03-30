@@ -2,11 +2,13 @@
 WIP
 
 ## Rules
-1. nya-ify (eg. `naruhodo` -> `nyaruhodo`)
+Here are some 100% clear rules.
+1. replace `na` -> `nya`
 2. replace `l` and `r` with `w`
-3. stutter sometimes (`hi` -> `h-hi`)
-4. add a text emoji after punctuation (`,`, `.`, or `!`) sometimes
-5. replace some words (`small` -> `smol`, etc.)
+3. remove double `l` or `r`
+4. add text emoji randomly after punctuation (`.`, `!`)
+5. everything must be lowercase
+6. stutter at the start of sentences sometimes
 
 ## License
 [GPL-3.0-or-later](./LICENSE)
