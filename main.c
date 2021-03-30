@@ -23,6 +23,7 @@ static uint8_t emojis[][EMOJI_MAX_LEN] = {
 	"(„ᵕᴗᵕ„) ",
 	"(U ﹏ U) "
 };
+static size_t emojis_len = (sizeof(emojis)/sizeof(emojis[0]));
 
 /* Custom faster isalpha. */
 static inline int fast_isalpha(int c) {
@@ -41,13 +42,13 @@ int main(int argc, char *argv[]){
 	return cnv_ascii(in, out);
 }
 
-#define WBUFFER_WRITE(_WBUFFER_WRITE_C) do { \
+#define WBUFFER_WRITE(_ADDED_CHAR) { \
 	if (write_buffer_free >= buffer_size) { \
 		fwrite(write_buffer, buffer_size, 1, out); \
 		write_buffer_free = 0; \
 	} \
-	write_buffer[write_buffer_free++] = _WBUFFER_WRITE_C; \
-} while(0)
+	write_buffer[write_buffer_free++] = _ADDED_CHAR; \
+}
 
 int cnv_ascii(FILE *in, FILE *out) {
 	/* Buffers */
@@ -103,13 +104,12 @@ int cnv_ascii(FILE *in, FILE *out) {
 				/* Draw emoji if state says so. */
 				if (emoji_state == 0) {
 					/* Get random emoji. */
-					const int rand_i = rand() % (sizeof(emojis)/sizeof(emojis[0]));
+					const int rand_i = rand() % emojis_len;
 					const uint8_t *s = emojis[rand_i];
-					size_t s_len = strlen((const char *)s);
 					/* Write and flush write buffer. */
 					/* TODO: This part can be optimized. */
-					for (m = 0; m < s_len; ++m) {
-						WBUFFER_WRITE(s[m]);
+					while (*s != 0) {
+						WBUFFER_WRITE(*(s++));
 					}
 					emoji_state = 1;
 				} else {
