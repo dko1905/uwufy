@@ -36,6 +36,8 @@ int main(int argc, char *argv[]){
 	FILE *in = stdin;
 	FILE *out = stdout;
 
+	fprintf(stderr, "Version: %s\n", VERSION);
+
 	return cnv_ascii(in, out);
 }
 

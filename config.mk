@@ -1,5 +1,5 @@
 # Version
-VERSION = 0.0.1
+VERSION = 1.2
 
 # Customize to fit your system
 PKG_CONFIG = pkg-config
