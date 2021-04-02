@@ -49,6 +49,7 @@ int main(int argc, char *argv[]){
 	} \
 	write_buffer[write_buffer_free++] = _ADDED_CHAR; \
 }
+#define LCCC_ACCESS(_lccc, _i) (((uint8_t *)&_lccc)[_i])
 
 int cnv_ascii(FILE *in, FILE *out) {
 	/* Buffers */
@@ -59,7 +60,8 @@ int cnv_ascii(FILE *in, FILE *out) {
 	/* Generic variables */
 	ssize_t bytes_read = 0;
 	size_t n = 0, m = 0;
-	uint_fast8_t cc = 0, lc = 0; /* Current char, last char. */
+	//uint_fast8_t cc = 0, lc = 0; /* Current char, last char. */
+	uint16_t lccc = 0x0; /* cc and lc combined. */
 	uint32_t emoji_rand = 0;
 	uint8_t *emoji_s = NULL;
 	/* State counters */
@@ -71,36 +73,27 @@ int cnv_ascii(FILE *in, FILE *out) {
 	while ((bytes_read = fread(read_buffer, 1, buffer_size, in)) > 0) {
 		/* Loop through charectors. */
 		for (n = 0; n < bytes_read; ++n) {
-			cc = read_buffer[n];
+			LCCC_ACCESS(lccc, 1) = read_buffer[n];
 			/* Is char from alphabet */
-			if (fast_isalpha(cc)) {
+			if (fast_isalpha(LCCC_ACCESS(lccc, 1))) {
 				/* Everything must be lowercase. */
-				cc = tolower(cc);
+				LCCC_ACCESS(lccc, 1) = tolower(LCCC_ACCESS(lccc, 1));
 				/* Remove double 'l','r' and convert into 'w'. */
-				if (cc == 'l') {
-					if (lc == 'l') {
-						cc = '\0';
-					} else {
-						cc = 'w';
-					}
-				} else if (cc == 'r') {
-					if (lc == 'r') {
-						cc = '\0';
-					} else {
-						cc = 'w';
-					}
+				if (lccc == 0x6C6C || lccc == 0x7272) {
+					LCCC_ACCESS(lccc, 1) = '\0';
+				} else if (LCCC_ACCESS(lccc, 1) == 'l' || LCCC_ACCESS(lccc, 1) == 'r') {
+					LCCC_ACCESS(lccc, 1) = 'w';
 				}
 				/* Add 'y' in between 'n' and 'a'. */
-				if (lc == 'n' && cc == 'a') {
+				if (lccc == 0x6e61) {
 					WBUFFER_WRITE('y');
 				}
 			}
 			/* Sentence state. */
 			if (sentence_state == 1) {
-				if (cc == ' ') {
-					if (lc == '.' || lc == '!') {
-						sentence_state = 0;
-					}
+				/* Check if cc == ' ' and lc = '!' or '.' */
+				if (lccc == 0x202e || lccc == 0x2120) {
+					sentence_state = 0;
 				}
 			} else {
 				/* Draw emoji if state says so. */
@@ -109,19 +102,19 @@ int cnv_ascii(FILE *in, FILE *out) {
 					emoji_rand = rand() % emojis_len;
 					emoji_s = emojis[emoji_rand];
 					/* Write and flush write buffer. */
-					while (*emoji_s != 0) {
+					do {
 						WBUFFER_WRITE(*(emoji_s++));
-					}
+					} while (*emoji_s != 0);
 					emoji_state = 1;
 				} else {
 					if (emoji_state++ >= EMOJI_BALANCE) {
 						emoji_state = 0;
 					}
 				}
-				if (fast_isalpha(cc)) {
+				if (fast_isalpha(LCCC_ACCESS(lccc, 1))) {
 					/* Stutter logic. */
 					if (stutter_state == 0) {
-						WBUFFER_WRITE(cc);
+						WBUFFER_WRITE(LCCC_ACCESS(lccc, 1));
 						WBUFFER_WRITE('-');
 						stutter_state = 1;
 					} else {
@@ -133,9 +126,9 @@ int cnv_ascii(FILE *in, FILE *out) {
 				sentence_state = 1;
 			}
 			/* Write current char if it isn't `NULL`. */
-			lc = read_buffer[n];
-			if (cc != '\0') {
-				WBUFFER_WRITE(cc);
+			LCCC_ACCESS(lccc, 0) = read_buffer[n];
+			if (LCCC_ACCESS(lccc, 1) != '\0') {
+				WBUFFER_WRITE(LCCC_ACCESS(lccc, 1));
 			}
 		}
 	}
