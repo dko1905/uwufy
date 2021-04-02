@@ -59,11 +59,13 @@ int cnv_ascii(FILE *in, FILE *out) {
 	/* Generic variables */
 	ssize_t bytes_read = 0;
 	size_t n = 0, m = 0;
-	uint8_t cc = 0, lc = 0; /* Current char, last char. */
+	uint_fast8_t cc = 0, lc = 0; /* Current char, last char. */
+	uint32_t emoji_rand = 0;
+	uint8_t *emoji_s = NULL;
 	/* State counters */
-	int sentence_state = 1; /* 0 - at start of sentence, 1 - normal */
-	int stutter_state = 1; /* 0 - stutter, 0+ - don't */
-	int emoji_state = 1; /* 0 - draw random emoji, 0+ - don't */
+	uint32_t sentence_state = 1; /* 0 - at start of sentence, 1 - normal */
+	uint32_t stutter_state = 1; /* 0 - stutter, 0+ - don't */
+	uint32_t emoji_state = 1; /* 0 - draw random emoji, 0+ - don't */
 
 	/* Master loop, loop through buffers. */
 	while ((bytes_read = fread(read_buffer, 1, buffer_size, in)) > 0) {
@@ -104,11 +106,11 @@ int cnv_ascii(FILE *in, FILE *out) {
 				/* Draw emoji if state says so. */
 				if (emoji_state == 0) {
 					/* Get random emoji. */
-					const int rand_i = rand() % emojis_len;
-					const uint8_t *s = emojis[rand_i];
+					emoji_rand = rand() % emojis_len;
+					emoji_s = emojis[emoji_rand];
 					/* Write and flush write buffer. */
-					while (*s != 0) {
-						WBUFFER_WRITE(*(s++));
+					while (*emoji_s != 0) {
+						WBUFFER_WRITE(*(emoji_s++));
 					}
 					emoji_state = 1;
 				} else {
