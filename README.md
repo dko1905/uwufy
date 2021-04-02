@@ -15,7 +15,7 @@ Just pipe a file into the program and see the results.
 ```
 
 ## Rules
-Here are some 100% clear rules to follow.
+Here are the rules.
 1. replace `na` -> `nya`
 2. replace `l` and `r` with `w`
 3. remove double `l` or `r`
