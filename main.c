@@ -107,7 +107,6 @@ int cnv_ascii(FILE *in, FILE *out) {
 					const int rand_i = rand() % emojis_len;
 					const uint8_t *s = emojis[rand_i];
 					/* Write and flush write buffer. */
-					/* TODO: This part can be optimized. */
 					while (*s != 0) {
 						WBUFFER_WRITE(*(s++));
 					}
