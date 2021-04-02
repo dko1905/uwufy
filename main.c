@@ -17,6 +17,8 @@
 #define STUTTER_BALANCE 2
 /* This is the max len of the emoji strings. */
 #define EMOJI_MAX_LEN 20
+
+static char *progname = NULL;
 static uint8_t emojis[][EMOJI_MAX_LEN] = {
 	"(ʘωʘ) ",
 	"( °꒳° ) ",
@@ -41,7 +43,8 @@ int main(int argc, char *argv[]){
 	FILE *in = stdin;
 	FILE *out = stdout;
 
-	fprintf(stderr, "Version: %s\n", VERSION);
+	progname = argv[0];
+	fprintf(stderr, "%s: Version: %s\n", progname, VERSION);
 
 	return cnv_ascii(in, out);
 }
@@ -50,10 +53,10 @@ int cnv_ascii(FILE *in, FILE *out) {
 	uint_least16_t i = 1;
 	char *c = (char *)&i;
 	if (*c) {
-		fprintf(stderr, "Little endian\n");
+		fprintf(stderr, "%s: Little endian\n", progname);
 		return cnv_ascii_le(in, out);
 	} else {
-		fprintf(stderr, "Big endian\n");
+		fprintf(stderr, "%s: Big endian\n", progname);
 		return cnv_ascii_be(in, out);
 	}
 	return 0;
